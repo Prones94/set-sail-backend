@@ -9,7 +9,7 @@ const registerUser = async (req,res) => {
 
   try {
     const saltRounds = 10
-    const passwordHash = await bcrypt.has(password, saltRounds)
+    const passwordHash = await bcrypt.hash(password, saltRounds)
     const newUser = await createUser(username, passwordHash, email)
     res.status(201).json(newUser)
   } catch(err){

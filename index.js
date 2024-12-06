@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const authRoutes = require('./routes/authRoutes')
+const crewRoutes = require('./routes/crewRoutes')
 const app = express()
 const { Pool } = require('pg')
 const mongoose = require('mongoose')
@@ -29,6 +30,10 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err))
 
+
+// Registering routes
+app.use('/api/auth', authRoutes)
+app.use('/api/crew', crewRoutes)
 
 // Simple route to test PostgreSQL connection
 app.get('/', async (req,res) => {
