@@ -5,12 +5,12 @@ require('dotenv').config()
 
 // Register a new user
 const registerUser = async (req,res) => {
-  const { username, email, password } = req.body
+  const { username, email, password, role='member' } = req.body
 
   try {
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
-    const newUser = await createUser(username, passwordHash, email)
+    const newUser = await createUser(username, passwordHash, email, role)
     res.status(201).json(newUser)
   } catch(err){
     res.status(500).json({ error: err.message })

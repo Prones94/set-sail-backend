@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const authRoutes = require('./routes/authRoutes')
 const crewRoutes = require('./routes/crewRoutes')
+const errorHandler = require('./middlewares/errorHandler')
 const app = express()
 const { Pool } = require('pg')
 const mongoose = require('mongoose')
@@ -10,6 +11,9 @@ const PORT = process.env.PORT || 5002
 
 // Middleware to parse JSON
 app.use(express.json())
+
+//Add error handling middleware at the end
+app.use(errorHandler)
 
 // Register Routes
 app.use('/api/auth', authRoutes)
