@@ -1,10 +1,17 @@
 require('dotenv').config()
 const express = require('express')
+const authRoutes = require('./routes/authRoutes')
+const app = express()
 const { Pool } = require('pg')
 const mongoose = require('mongoose')
 
-const app = express()
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 5002
+
+// Middleware to parse JSON
+app.use(express.json())
+
+// Register Routes
+app.use('/api/auth', authRoutes)
 
 // PostgreSQL Connection
 const pool = new Pool({
