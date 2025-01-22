@@ -4,27 +4,42 @@ const {
   addCrewMemberHandler,
   getCrewMembersHandler,
   getAllCrewsHandler,
-  removeCrewMemberHandler
+  removeCrewMemberHandler,
+  removeSpecificMemberHandler,
+  createInvitationHandler,
+  acceptInvitationHandler,
+  rejectInvitationHandler
 } = require('../controllers/crewController');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
+const { validateCreateCrew, validateInvitation } = require('../middlewares/validationMiddleware');
 
 const router = express.Router();
 
-// Route to create a crew (requires captain or admin role)
-router.post('/create', authenticateToken, authorizeRole(['captain', 'admin']), createCrewHandler);
+// Route to create a crew
+router.post('/crews', authenticateToken, authorizeRole(['captain', 'admin']), validateCreateCrew, createCrewHandler);
 
-// Adds the authenticated user to the specified crew, identified by crewId.
-// Requires a valid JWT token in the Authorization header to identify and authenticate the user.
-router.post('/:crewId/join', authenticateToken, addCrewMemberHandler);
+// Join a crew
+router.post('/crews/:crewId/join', authenticateToken, addCrewMemberHandler);
 
-// Retrieves a list of all members in the specified crew, identified by crewId.
-// Requires a valid JWT token in the Authorization header to ensure the requester is authenticated.
-router.get('/:crewId/members', authenticateToken, getCrewMembersHandler);
+// Get members of a crew
+router.get('/crews/:crewId/members', authenticateToken, getCrewMembersHandler);
 
-// Route to get all crews (requires admin role)
-router.get('/', authenticateToken, authorizeRole(['admin']), getAllCrewsHandler);
+// Get all crews
+router.get('/crews', authenticateToken, authorizeRole(['admin']), getAllCrewsHandler);
 
-// Allow a user to leave a crew they are part of
-router.delete('/:crewId/leave', authenticateToken, removeCrewMemberHandler);
+// Leave a crew
+router.delete('/crews/:crewId/leave', authenticateToken, removeCrewMemberHandler);
+
+// Remove a member from a crew
+router.delete('/crews/:crewId/members/:memberId/remove', authenticateToken, authorizeRole(['captain', 'admin']), removeSpecificMemberHandler);
+
+// Send an invitation
+router.post('/crews/:crewId/invite', authenticateToken, authorizeRole(['captain', 'admin']), validateInvitation, createInvitationHandler);
+
+// Accept an invitation
+router.post('/invitations/:invitationId/accept', authenticateToken, acceptInvitationHandler);
+
+// Reject an invitation
+router.post('/invitations/:invitationId/reject', authenticateToken, rejectInvitationHandler);
 
 module.exports = router;

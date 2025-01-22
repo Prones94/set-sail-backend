@@ -1,27 +1,37 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req,res,next)=> {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'No token provided' })
+    return res.status(401).json({ error: 'No token provided' });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err){
-      return res.status(403).json({ error: 'Invalid token' })
+    if (err) {
+      return res.status(403).json({ error: 'Invalid token' });
     }
-    req.user = user
-    next()
-  })
-}
+    console.log('Decoded JWT:', user);
+    req.user = user;
+    next();
+  });
+};
 
-const authorizeRole = roles => (req,res, next) => {
-  if (!roles.include(req.user.role)){
-    return res.status(403).json({ error: 'Access denied' })
+const authorizeRole = (roles) => {
+  if (!Array.isArray(roles)) {
+    throw new Error('Roles must be an array');
   }
-  next()
-}
 
-module.exports = {authenticateToken, authorizeRole}
+  return (req, res, next) => {
+    console.log('Allowed roles:', roles);
+    console.log('User role:', req.user.role);
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    next();
+  };
+};
+
+module.exports = { authenticateToken, authorizeRole };

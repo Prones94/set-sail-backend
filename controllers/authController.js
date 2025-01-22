@@ -8,10 +8,19 @@ const registerUser = async (req,res) => {
   const { username, email, password, role='member' } = req.body
 
   try {
+
+    if (!['captain', 'admin'].includes(role)){
+      return res.status(403).json({ error: 'You cannot assign this role during registration'})
+    }
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
     const newUser = await createUser(username, passwordHash, email, role)
-    res.status(201).json(newUser)
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRATION || '1h' }
+    )
+    res.status(201).json({ token })
   } catch(err){
     res.status(500).json({ error: err.message })
   }
@@ -24,7 +33,7 @@ const loginUser = async (req,res) => {
   try {
     const user = await findUserByEmail(email)
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' })
+      return res.status(404).json({ error: 'User not found' })
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password)
@@ -33,7 +42,7 @@ const loginUser = async (req,res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     )
